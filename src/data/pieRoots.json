@@ -1,0 +1,973 @@
+{
+    "night": {
+        "pieRoot": "*nókʷts",
+        "pieMeaning": "night",
+        "pieDate": -4500,
+        "chain": [
+            {
+                "lang": "ine-pro",
+                "langName": "Proto-Indo-European",
+                "word": "*nókʷts",
+                "date": -4500,
+                "family": "pie"
+            },
+            {
+                "lang": "gem-pro",
+                "langName": "Proto-Germanic",
+                "word": "*nahtiz",
+                "date": -500,
+                "family": "germanic"
+            },
+            {
+                "lang": "ang",
+                "langName": "Old English",
+                "word": "niht",
+                "date": 900,
+                "family": "germanic"
+            },
+            {
+                "lang": "enm",
+                "langName": "Middle English",
+                "word": "night",
+                "date": 1200,
+                "family": "germanic"
+            },
+            {
+                "lang": "en",
+                "langName": "English",
+                "word": "night",
+                "date": 1700,
+                "family": "germanic"
+            }
+        ],
+        "cognates": [
+            {
+                "lang": "la",
+                "langName": "Latin",
+                "word": "nox",
+                "family": "italic"
+            },
+            {
+                "lang": "grc",
+                "langName": "Ancient Greek",
+                "word": "νύξ (nyx)",
+                "family": "hellenic"
+            },
+            {
+                "lang": "sa",
+                "langName": "Sanskrit",
+                "word": "नक्त (naktam)",
+                "family": "indoiranian"
+            },
+            {
+                "lang": "de",
+                "langName": "German",
+                "word": "Nacht",
+                "family": "germanic"
+            },
+            {
+                "lang": "nl",
+                "langName": "Dutch",
+                "word": "nacht",
+                "family": "germanic"
+            },
+            {
+                "lang": "ru",
+                "langName": "Russian",
+                "word": "ночь (noch')",
+                "family": "slavic"
+            },
+            {
+                "lang": "lv",
+                "langName": "Latvian",
+                "word": "nakts",
+                "family": "baltic"
+            },
+            {
+                "lang": "cy",
+                "langName": "Welsh",
+                "word": "nos",
+                "family": "celtic"
+            }
+        ]
+    },
+    "father": {
+        "pieRoot": "*ph₂tḗr",
+        "pieMeaning": "father",
+        "pieDate": -4500,
+        "chain": [
+            {
+                "lang": "ine-pro",
+                "langName": "Proto-Indo-European",
+                "word": "*ph₂tḗr",
+                "date": -4500,
+                "family": "pie"
+            },
+            {
+                "lang": "gem-pro",
+                "langName": "Proto-Germanic",
+                "word": "*fadēr",
+                "date": -500,
+                "family": "germanic"
+            },
+            {
+                "lang": "ang",
+                "langName": "Old English",
+                "word": "fæder",
+                "date": 900,
+                "family": "germanic"
+            },
+            {
+                "lang": "enm",
+                "langName": "Middle English",
+                "word": "fader",
+                "date": 1200,
+                "family": "germanic"
+            },
+            {
+                "lang": "en",
+                "langName": "English",
+                "word": "father",
+                "date": 1500,
+                "family": "germanic"
+            }
+        ],
+        "cognates": [
+            {
+                "lang": "la",
+                "langName": "Latin",
+                "word": "pater",
+                "family": "italic"
+            },
+            {
+                "lang": "grc",
+                "langName": "Ancient Greek",
+                "word": "πατήρ (patēr)",
+                "family": "hellenic"
+            },
+            {
+                "lang": "sa",
+                "langName": "Sanskrit",
+                "word": "पितृ (pitṛ)",
+                "family": "indoiranian"
+            },
+            {
+                "lang": "fa",
+                "langName": "Persian",
+                "word": "پدر (pedar)",
+                "family": "indoiranian"
+            },
+            {
+                "lang": "de",
+                "langName": "German",
+                "word": "Vater",
+                "family": "germanic"
+            },
+            {
+                "lang": "fr",
+                "langName": "French",
+                "word": "père",
+                "family": "italic"
+            },
+            {
+                "lang": "es",
+                "langName": "Spanish",
+                "word": "padre",
+                "family": "italic"
+            },
+            {
+                "lang": "ga",
+                "langName": "Irish",
+                "word": "athair",
+                "family": "celtic"
+            }
+        ]
+    },
+    "water": {
+        "pieRoot": "*wódr̥",
+        "pieMeaning": "water",
+        "pieDate": -4500,
+        "chain": [
+            {
+                "lang": "ine-pro",
+                "langName": "Proto-Indo-European",
+                "word": "*wódr̥",
+                "date": -4500,
+                "family": "pie"
+            },
+            {
+                "lang": "gem-pro",
+                "langName": "Proto-Germanic",
+                "word": "*watar",
+                "date": -500,
+                "family": "germanic"
+            },
+            {
+                "lang": "ang",
+                "langName": "Old English",
+                "word": "wæter",
+                "date": 900,
+                "family": "germanic"
+            },
+            {
+                "lang": "enm",
+                "langName": "Middle English",
+                "word": "water",
+                "date": 1200,
+                "family": "germanic"
+            },
+            {
+                "lang": "en",
+                "langName": "English",
+                "word": "water",
+                "date": 1500,
+                "family": "germanic"
+            }
+        ],
+        "cognates": [
+            {
+                "lang": "la",
+                "langName": "Latin",
+                "word": "unda (wave)",
+                "family": "italic"
+            },
+            {
+                "lang": "grc",
+                "langName": "Ancient Greek",
+                "word": "ὕδωρ (hydōr)",
+                "family": "hellenic"
+            },
+            {
+                "lang": "sa",
+                "langName": "Sanskrit",
+                "word": "उदन् (udan)",
+                "family": "indoiranian"
+            },
+            {
+                "lang": "de",
+                "langName": "German",
+                "word": "Wasser",
+                "family": "germanic"
+            },
+            {
+                "lang": "ru",
+                "langName": "Russian",
+                "word": "вода (voda)",
+                "family": "slavic"
+            },
+            {
+                "lang": "lt",
+                "langName": "Lithuanian",
+                "word": "vanduo",
+                "family": "baltic"
+            }
+        ]
+    },
+    "mother": {
+        "pieRoot": "*méh₂tēr",
+        "pieMeaning": "mother",
+        "pieDate": -4500,
+        "chain": [
+            {
+                "lang": "ine-pro",
+                "langName": "Proto-Indo-European",
+                "word": "*méh₂tēr",
+                "date": -4500,
+                "family": "pie"
+            },
+            {
+                "lang": "gem-pro",
+                "langName": "Proto-Germanic",
+                "word": "*mōdēr",
+                "date": -500,
+                "family": "germanic"
+            },
+            {
+                "lang": "ang",
+                "langName": "Old English",
+                "word": "mōdor",
+                "date": 900,
+                "family": "germanic"
+            },
+            {
+                "lang": "enm",
+                "langName": "Middle English",
+                "word": "moder",
+                "date": 1200,
+                "family": "germanic"
+            },
+            {
+                "lang": "en",
+                "langName": "English",
+                "word": "mother",
+                "date": 1500,
+                "family": "germanic"
+            }
+        ],
+        "cognates": [
+            {
+                "lang": "la",
+                "langName": "Latin",
+                "word": "māter",
+                "family": "italic"
+            },
+            {
+                "lang": "grc",
+                "langName": "Ancient Greek",
+                "word": "μήτηρ (mētēr)",
+                "family": "hellenic"
+            },
+            {
+                "lang": "sa",
+                "langName": "Sanskrit",
+                "word": "मातृ (mātṛ)",
+                "family": "indoiranian"
+            },
+            {
+                "lang": "fa",
+                "langName": "Persian",
+                "word": "مادر (mādar)",
+                "family": "indoiranian"
+            },
+            {
+                "lang": "de",
+                "langName": "German",
+                "word": "Mutter",
+                "family": "germanic"
+            },
+            {
+                "lang": "fr",
+                "langName": "French",
+                "word": "mère",
+                "family": "italic"
+            },
+            {
+                "lang": "es",
+                "langName": "Spanish",
+                "word": "madre",
+                "family": "italic"
+            },
+            {
+                "lang": "ga",
+                "langName": "Irish",
+                "word": "máthair",
+                "family": "celtic"
+            },
+            {
+                "lang": "ru",
+                "langName": "Russian",
+                "word": "мать (mat')",
+                "family": "slavic"
+            }
+        ]
+    },
+    "fire": {
+        "pieRoot": "*péh₂wr̥",
+        "pieMeaning": "fire",
+        "pieDate": -4500,
+        "chain": [
+            {
+                "lang": "ine-pro",
+                "langName": "Proto-Indo-European",
+                "word": "*péh₂wr̥",
+                "date": -4500,
+                "family": "pie"
+            },
+            {
+                "lang": "gem-pro",
+                "langName": "Proto-Germanic",
+                "word": "*fōr",
+                "date": -500,
+                "family": "germanic"
+            },
+            {
+                "lang": "ang",
+                "langName": "Old English",
+                "word": "fȳr",
+                "date": 900,
+                "family": "germanic"
+            },
+            {
+                "lang": "enm",
+                "langName": "Middle English",
+                "word": "fir",
+                "date": 1200,
+                "family": "germanic"
+            },
+            {
+                "lang": "en",
+                "langName": "English",
+                "word": "fire",
+                "date": 1500,
+                "family": "germanic"
+            }
+        ],
+        "cognates": [
+            {
+                "lang": "grc",
+                "langName": "Ancient Greek",
+                "word": "πῦρ (pyr)",
+                "family": "hellenic"
+            },
+            {
+                "lang": "de",
+                "langName": "German",
+                "word": "Feuer",
+                "family": "germanic"
+            },
+            {
+                "lang": "nl",
+                "langName": "Dutch",
+                "word": "vuur",
+                "family": "germanic"
+            },
+            {
+                "lang": "hu",
+                "langName": "Armenian",
+                "word": "hur",
+                "family": "other"
+            }
+        ]
+    },
+    "star": {
+        "pieRoot": "*h₂stḗr",
+        "pieMeaning": "star",
+        "pieDate": -4500,
+        "chain": [
+            {
+                "lang": "ine-pro",
+                "langName": "Proto-Indo-European",
+                "word": "*h₂stḗr",
+                "date": -4500,
+                "family": "pie"
+            },
+            {
+                "lang": "gem-pro",
+                "langName": "Proto-Germanic",
+                "word": "*sterną",
+                "date": -500,
+                "family": "germanic"
+            },
+            {
+                "lang": "ang",
+                "langName": "Old English",
+                "word": "steorra",
+                "date": 900,
+                "family": "germanic"
+            },
+            {
+                "lang": "enm",
+                "langName": "Middle English",
+                "word": "sterre",
+                "date": 1200,
+                "family": "germanic"
+            },
+            {
+                "lang": "en",
+                "langName": "English",
+                "word": "star",
+                "date": 1500,
+                "family": "germanic"
+            }
+        ],
+        "cognates": [
+            {
+                "lang": "la",
+                "langName": "Latin",
+                "word": "stella",
+                "family": "italic"
+            },
+            {
+                "lang": "grc",
+                "langName": "Ancient Greek",
+                "word": "ἀστήρ (astēr)",
+                "family": "hellenic"
+            },
+            {
+                "lang": "sa",
+                "langName": "Sanskrit",
+                "word": "तारा (tārā)",
+                "family": "indoiranian"
+            },
+            {
+                "lang": "de",
+                "langName": "German",
+                "word": "Stern",
+                "family": "germanic"
+            },
+            {
+                "lang": "fr",
+                "langName": "French",
+                "word": "étoile",
+                "family": "italic"
+            },
+            {
+                "lang": "es",
+                "langName": "Spanish",
+                "word": "estrella",
+                "family": "italic"
+            }
+        ]
+    },
+    "heart": {
+        "pieRoot": "*ḱḗr",
+        "pieMeaning": "heart",
+        "pieDate": -4500,
+        "chain": [
+            {
+                "lang": "ine-pro",
+                "langName": "Proto-Indo-European",
+                "word": "*ḱḗr",
+                "date": -4500,
+                "family": "pie"
+            },
+            {
+                "lang": "gem-pro",
+                "langName": "Proto-Germanic",
+                "word": "*hertô",
+                "date": -500,
+                "family": "germanic"
+            },
+            {
+                "lang": "ang",
+                "langName": "Old English",
+                "word": "heorte",
+                "date": 900,
+                "family": "germanic"
+            },
+            {
+                "lang": "enm",
+                "langName": "Middle English",
+                "word": "herte",
+                "date": 1200,
+                "family": "germanic"
+            },
+            {
+                "lang": "en",
+                "langName": "English",
+                "word": "heart",
+                "date": 1500,
+                "family": "germanic"
+            }
+        ],
+        "cognates": [
+            {
+                "lang": "la",
+                "langName": "Latin",
+                "word": "cor/cordis",
+                "family": "italic"
+            },
+            {
+                "lang": "grc",
+                "langName": "Ancient Greek",
+                "word": "καρδία (kardia)",
+                "family": "hellenic"
+            },
+            {
+                "lang": "sa",
+                "langName": "Sanskrit",
+                "word": "हृदय (hṛdaya)",
+                "family": "indoiranian"
+            },
+            {
+                "lang": "de",
+                "langName": "German",
+                "word": "Herz",
+                "family": "germanic"
+            },
+            {
+                "lang": "fr",
+                "langName": "French",
+                "word": "cœur",
+                "family": "italic"
+            },
+            {
+                "lang": "ru",
+                "langName": "Russian",
+                "word": "сердце (serdtse)",
+                "family": "slavic"
+            }
+        ]
+    },
+    "name": {
+        "pieRoot": "*h₁nómn̥",
+        "pieMeaning": "name",
+        "pieDate": -4500,
+        "chain": [
+            {
+                "lang": "ine-pro",
+                "langName": "Proto-Indo-European",
+                "word": "*h₁nómn̥",
+                "date": -4500,
+                "family": "pie"
+            },
+            {
+                "lang": "gem-pro",
+                "langName": "Proto-Germanic",
+                "word": "*namô",
+                "date": -500,
+                "family": "germanic"
+            },
+            {
+                "lang": "ang",
+                "langName": "Old English",
+                "word": "nama",
+                "date": 900,
+                "family": "germanic"
+            },
+            {
+                "lang": "enm",
+                "langName": "Middle English",
+                "word": "name",
+                "date": 1200,
+                "family": "germanic"
+            },
+            {
+                "lang": "en",
+                "langName": "English",
+                "word": "name",
+                "date": 1500,
+                "family": "germanic"
+            }
+        ],
+        "cognates": [
+            {
+                "lang": "la",
+                "langName": "Latin",
+                "word": "nomen",
+                "family": "italic"
+            },
+            {
+                "lang": "grc",
+                "langName": "Ancient Greek",
+                "word": "ὄνομα (onoma)",
+                "family": "hellenic"
+            },
+            {
+                "lang": "sa",
+                "langName": "Sanskrit",
+                "word": "नाम (nāma)",
+                "family": "indoiranian"
+            },
+            {
+                "lang": "de",
+                "langName": "German",
+                "word": "Name",
+                "family": "germanic"
+            },
+            {
+                "lang": "ru",
+                "langName": "Russian",
+                "word": "имя (imya)",
+                "family": "slavic"
+            }
+        ]
+    },
+    "new": {
+        "pieRoot": "*néwos",
+        "pieMeaning": "new",
+        "pieDate": -4500,
+        "chain": [
+            {
+                "lang": "ine-pro",
+                "langName": "Proto-Indo-European",
+                "word": "*néwos",
+                "date": -4500,
+                "family": "pie"
+            },
+            {
+                "lang": "gem-pro",
+                "langName": "Proto-Germanic",
+                "word": "*niwjaz",
+                "date": -500,
+                "family": "germanic"
+            },
+            {
+                "lang": "ang",
+                "langName": "Old English",
+                "word": "nīwe",
+                "date": 900,
+                "family": "germanic"
+            },
+            {
+                "lang": "enm",
+                "langName": "Middle English",
+                "word": "newe",
+                "date": 1200,
+                "family": "germanic"
+            },
+            {
+                "lang": "en",
+                "langName": "English",
+                "word": "new",
+                "date": 1500,
+                "family": "germanic"
+            }
+        ],
+        "cognates": [
+            {
+                "lang": "la",
+                "langName": "Latin",
+                "word": "novus",
+                "family": "italic"
+            },
+            {
+                "lang": "grc",
+                "langName": "Ancient Greek",
+                "word": "νέος (neos)",
+                "family": "hellenic"
+            },
+            {
+                "lang": "sa",
+                "langName": "Sanskrit",
+                "word": "नव (nava)",
+                "family": "indoiranian"
+            },
+            {
+                "lang": "de",
+                "langName": "German",
+                "word": "neu",
+                "family": "germanic"
+            },
+            {
+                "lang": "fr",
+                "langName": "French",
+                "word": "nouveau",
+                "family": "italic"
+            },
+            {
+                "lang": "ru",
+                "langName": "Russian",
+                "word": "новый (novyi)",
+                "family": "slavic"
+            },
+            {
+                "lang": "ga",
+                "langName": "Irish",
+                "word": "nua",
+                "family": "celtic"
+            }
+        ]
+    },
+    "sun": {
+        "pieRoot": "*sóh₂wl̥",
+        "pieMeaning": "sun",
+        "pieDate": -4500,
+        "chain": [
+            {
+                "lang": "ine-pro",
+                "langName": "Proto-Indo-European",
+                "word": "*sóh₂wl̥",
+                "date": -4500,
+                "family": "pie"
+            },
+            {
+                "lang": "gem-pro",
+                "langName": "Proto-Germanic",
+                "word": "*sunnō",
+                "date": -500,
+                "family": "germanic"
+            },
+            {
+                "lang": "ang",
+                "langName": "Old English",
+                "word": "sunne",
+                "date": 900,
+                "family": "germanic"
+            },
+            {
+                "lang": "enm",
+                "langName": "Middle English",
+                "word": "sunne",
+                "date": 1200,
+                "family": "germanic"
+            },
+            {
+                "lang": "en",
+                "langName": "English",
+                "word": "sun",
+                "date": 1500,
+                "family": "germanic"
+            }
+        ],
+        "cognates": [
+            {
+                "lang": "la",
+                "langName": "Latin",
+                "word": "sol",
+                "family": "italic"
+            },
+            {
+                "lang": "grc",
+                "langName": "Ancient Greek",
+                "word": "ἥλιος (helios)",
+                "family": "hellenic"
+            },
+            {
+                "lang": "sa",
+                "langName": "Sanskrit",
+                "word": "सूर्य (sūrya)",
+                "family": "indoiranian"
+            },
+            {
+                "lang": "de",
+                "langName": "German",
+                "word": "Sonne",
+                "family": "germanic"
+            },
+            {
+                "lang": "fr",
+                "langName": "French",
+                "word": "soleil",
+                "family": "italic"
+            },
+            {
+                "lang": "es",
+                "langName": "Spanish",
+                "word": "sol",
+                "family": "italic"
+            },
+            {
+                "lang": "ru",
+                "langName": "Russian",
+                "word": "солнце (solntse)",
+                "family": "slavic"
+            }
+        ]
+    },
+    "land": {
+        "pieRoot": "*lendʰ-",
+        "pieMeaning": "open land, heath",
+        "pieDate": -4500,
+        "chain": [
+            {
+                "lang": "ine-pro",
+                "langName": "Proto-Indo-European",
+                "word": "*lendʰ-",
+                "date": -4500,
+                "family": "pie"
+            },
+            {
+                "lang": "gem-pro",
+                "langName": "Proto-Germanic",
+                "word": "*landą",
+                "date": -500,
+                "family": "germanic"
+            },
+            {
+                "lang": "ang",
+                "langName": "Old English",
+                "word": "land",
+                "date": 900,
+                "family": "germanic"
+            },
+            {
+                "lang": "en",
+                "langName": "English",
+                "word": "land",
+                "date": 1500,
+                "family": "germanic"
+            }
+        ],
+        "cognates": [
+            {
+                "lang": "de",
+                "langName": "German",
+                "word": "Land",
+                "family": "germanic"
+            },
+            {
+                "lang": "nl",
+                "langName": "Dutch",
+                "word": "land",
+                "family": "germanic"
+            },
+            {
+                "lang": "ga",
+                "langName": "Irish",
+                "word": "lann",
+                "family": "celtic"
+            },
+            {
+                "lang": "cy",
+                "langName": "Welsh",
+                "word": "llan",
+                "family": "celtic"
+            }
+        ]
+    },
+    "red": {
+        "pieRoot": "*h₁reudʰ-",
+        "pieMeaning": "red",
+        "pieDate": -4500,
+        "chain": [
+            {
+                "lang": "ine-pro",
+                "langName": "Proto-Indo-European",
+                "word": "*h₁reudʰ-",
+                "date": -4500,
+                "family": "pie"
+            },
+            {
+                "lang": "gem-pro",
+                "langName": "Proto-Germanic",
+                "word": "*raudaz",
+                "date": -500,
+                "family": "germanic"
+            },
+            {
+                "lang": "ang",
+                "langName": "Old English",
+                "word": "rēad",
+                "date": 900,
+                "family": "germanic"
+            },
+            {
+                "lang": "enm",
+                "langName": "Middle English",
+                "word": "reed",
+                "date": 1200,
+                "family": "germanic"
+            },
+            {
+                "lang": "en",
+                "langName": "English",
+                "word": "red",
+                "date": 1500,
+                "family": "germanic"
+            }
+        ],
+        "cognates": [
+            {
+                "lang": "la",
+                "langName": "Latin",
+                "word": "ruber",
+                "family": "italic"
+            },
+            {
+                "lang": "grc",
+                "langName": "Ancient Greek",
+                "word": "ἐρυθρός (erythros)",
+                "family": "hellenic"
+            },
+            {
+                "lang": "sa",
+                "langName": "Sanskrit",
+                "word": "रोहित (rohita)",
+                "family": "indoiranian"
+            },
+            {
+                "lang": "de",
+                "langName": "German",
+                "word": "rot",
+                "family": "germanic"
+            },
+            {
+                "lang": "ru",
+                "langName": "Russian",
+                "word": "рудый (rudyi)",
+                "family": "slavic"
+            }
+        ]
+    }
+}
