@@ -1,6 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react';
 import * as d3 from 'd3';
 import * as topojson from 'topojson-client';
+import { getLangForCountry } from '../data/countryToLang';
+import { getPathFromPIEToLang } from '../utils/treePath';
+import { LANG_FAMILIES, LANG_DISPLAY_NAMES } from '../services/wiktionaryApi';
 
 // Geographic centers for each IE language family
 const IE_LOCATIONS = {
@@ -38,8 +41,8 @@ const IE_LOCATIONS = {
     indoiranian: {
         name: 'Indo-Iranian',
         family: 'indoiranian',
-        lat: 28, lon: 68,
-        label: 'Iranian Plateau & South Asia',
+        lat: 30, lon: 62,
+        label: 'Iran & India region (South Asia)',
         period: 'c. 2000 BCE',
         languages: ['Sanskrit', 'Hindi', 'Persian', 'Urdu', 'Bengali'],
     },
@@ -153,18 +156,30 @@ const LANGUAGE_COORDINATES = {
     'lv': { lat: 56.9, lon: 24.1, name: 'Latvian' },
     'ang': { lat: 52.5, lon: -1.0, name: 'Old English' },
     'non': { lat: 60.0, lon: 10.0, name: 'Old Norse' },
+    'no': { lat: 62.0, lon: 10.0, name: 'Norwegian' },
     'la': { lat: 41.9, lon: 12.5, name: 'Latin' },
     'grc': { lat: 37.9, lon: 23.7, name: 'Ancient Greek' },
 };
 
-export default function WorldMap({ wordData, activeFamily, onFamilyClick }) {
+// Coords for a lang id: specific language or family center
+function getCoordsForLang(langId) {
+    const specific = LANGUAGE_COORDINATES[langId];
+    if (specific) return { lat: specific.lat, lon: specific.lon, name: specific.name };
+    const family = LANG_FAMILIES[langId];
+    if (family && IE_LOCATIONS[family])
+        return { lat: IE_LOCATIONS[family].lat, lon: IE_LOCATIONS[family].lon, name: IE_LOCATIONS[family].name };
+    return null;
+}
+
+export default function WorldMap({ wordData, activeFamily, onFamilyClick, pathTargetLang = 'en', onPathTargetChange, showDispersion = true }) {
     const svgRef = useRef(null);
     const containerRef = useRef(null);
     const [worldData, setWorldData] = useState(null);
     const [tooltip, setTooltip] = useState(null);
     const [dimensions, setDimensions] = useState({ width: 800, height: 450 });
     const [rotation, setRotation] = useState([-30, -35]); // initial rotation (lon, lat)
-    const [scale, setScale] = useState(250); // initial zoom level
+    const BASE_SCALE = 280;
+    const [zoomLevel, setZoomLevel] = useState(1); // 1 = 100%, zoom multiplies projection scale
 
     // Fetch world topojson
     useEffect(() => {
@@ -225,9 +240,9 @@ export default function WorldMap({ wordData, activeFamily, onFamilyClick }) {
         fm.append('feMergeNode').attr('in', 'coloredBlur');
         fm.append('feMergeNode').attr('in', 'SourceGraphic');
 
-        // Projection - 3D Globe
+        // Projection - 3D Globe (scale = base × zoom for correct scalability)
         const projection = d3.geoOrthographic()
-            .scale(scale)
+            .scale(BASE_SCALE * zoomLevel)
             .translate([width / 2, height / 2])
             .rotate(rotation)
             .clipAngle(90);
@@ -235,7 +250,7 @@ export default function WorldMap({ wordData, activeFamily, onFamilyClick }) {
         const path = d3.geoPath().projection(projection);
         const g = svg.append('g');
 
-        // Drag behavior for globe rotation
+        // Drag behavior for globe rotation (will be attached to svg so it works over all content)
         const drag = d3.drag()
             .on('drag', (event) => {
                 const rotate = projection.rotate();
@@ -248,20 +263,13 @@ export default function WorldMap({ wordData, activeFamily, onFamilyClick }) {
                 setRotation(nextRotation);
             });
 
-        // Zoom behavior
+        // Zoom: only respond to wheel so drag can handle rotation (fixes globe not rotating)
         const zoom = d3.zoom()
-            .scaleExtent([100, 1000])
+            .scaleExtent([0.35, 3.5])
+            .filter(event => event.type === 'wheel')
             .on('zoom', (event) => {
-                setScale(event.transform.k);
+                setZoomLevel(event.transform.k);
             });
-
-        svg.append('rect')
-            .attr('width', width)
-            .attr('height', height)
-            .attr('fill', 'transparent')
-            .style('cursor', 'grab')
-            .call(drag)
-            .call(zoom);
 
         // Globe sphere
         g.append('path')
@@ -271,19 +279,20 @@ export default function WorldMap({ wordData, activeFamily, onFamilyClick }) {
             .attr('stroke', 'rgba(255,255,255,0.1)')
             .attr('stroke-width', 1);
 
-        // Countries
+        // Countries: visual layer only (no pointer events so drag/zoom on svg works)
         if (worldData) {
             const countries = topojson.feature(worldData, worldData.objects.countries);
             const borders = topojson.mesh(worldData, worldData.objects.countries, (a, b) => a !== b);
 
-            g.append('g')
+            g.append('g').attr('class', 'countries-fill')
                 .selectAll('path')
                 .data(countries.features)
                 .enter().append('path')
                 .attr('d', path)
                 .attr('fill', '#1a2540')
                 .attr('stroke', 'rgba(255,255,255,0.06)')
-                .attr('stroke-width', 0.4);
+                .attr('stroke-width', 0.4)
+                .style('pointer-events', 'none');
 
             g.append('path')
                 .datum(borders)
@@ -293,64 +302,175 @@ export default function WorldMap({ wordData, activeFamily, onFamilyClick }) {
                 .attr('d', path);
         }
 
-        // Draw migration paths
-        MIGRATION_PATHS.forEach(({ from, to, secondary }) => {
-            const fromLoc = IE_LOCATIONS[from];
-            const toLoc = IE_LOCATIONS[to];
-            if (!fromLoc || !toLoc) return;
+        // Draw migration paths only when showing full dispersion
+        if (showDispersion) {
+            MIGRATION_PATHS.forEach(({ from, to, secondary }) => {
+                const fromLoc = IE_LOCATIONS[from];
+                const toLoc = IE_LOCATIONS[to];
+                if (!fromLoc || !toLoc) return;
 
-            const route = { type: 'LineString', coordinates: [[fromLoc.lon, fromLoc.lat], [toLoc.lon, toLoc.lat]] };
-            const d = path(route);
-            if (d) {
-                g.append('path')
-                    .attr('d', d)
-                    .attr('fill', 'none')
-                    .attr('stroke', secondary ? 'rgba(255,255,255,0.12)' : FAMILY_COLORS[to] || '#FFD700')
-                    .attr('stroke-opacity', secondary ? 0.3 : 0.6)
-                    .attr('stroke-width', secondary ? 1 : 1.8)
-                    .attr('stroke-dasharray', secondary ? '4,3' : null)
-                    .attr('marker-end', `url(#arrow-${to})`);
-            }
-        });
-
-        // Collect all potential nodes to show
-        const nodesToShow = [];
-
-        // Always show family centers
-        Object.entries(IE_LOCATIONS).forEach(([key, loc]) => {
-            const word = getWordForLanguage(key, wordData);
-            const pt = projection([loc.lon, loc.lat]);
-            if (pt) {
-                nodesToShow.push({ key, x: pt[0], y: pt[1], ...loc, word, isFamilyCenter: true });
-            }
-        });
-
-        // Add specific language dots if they have words in wordData
-        if (wordData) {
-            const allWords = [];
-            if (wordData.etymologyChain) allWords.push(...wordData.etymologyChain);
-            if (wordData.staticEntry?.cognates) allWords.push(...wordData.staticEntry.cognates);
-            if (wordData.staticEntry?.chain) allWords.push(...wordData.staticEntry.chain);
-
-            allWords.forEach(n => {
-                if (LANGUAGE_COORDINATES[n.lang] && !nodesToShow.some(nd => nd.key === n.lang)) {
-                    const loc = LANGUAGE_COORDINATES[n.lang];
-                    const pt = projection([loc.lon, loc.lat]);
-                    if (pt) {
-                        nodesToShow.push({
-                            key: n.lang,
-                            x: pt[0], y: pt[1],
-                            name: loc.name,
-                            family: n.family,
-                            word: n.word,
-                            isFamilyCenter: false
-                        });
-                    }
+                const route = { type: 'LineString', coordinates: [[fromLoc.lon, fromLoc.lat], [toLoc.lon, toLoc.lat]] };
+                const d = path(route);
+                if (d) {
+                    g.append('path')
+                        .attr('d', d)
+                        .attr('fill', 'none')
+                        .attr('stroke', secondary ? 'rgba(255,255,255,0.12)' : FAMILY_COLORS[to] || '#FFD700')
+                        .attr('stroke-opacity', secondary ? 0.3 : 0.6)
+                        .attr('stroke-width', secondary ? 1 : 1.8)
+                        .attr('stroke-dasharray', secondary ? '4,3' : null)
+                        .attr('marker-end', `url(#arrow-${to})`);
                 }
             });
         }
 
-        // Render nodes
+        // Path from PIE to pathTargetLang with words laid out along the path
+        const pathLangIds = getPathFromPIEToLang(pathTargetLang);
+        if (pathLangIds.length > 0 && wordData) {
+            const pathSteps = pathLangIds
+                .map(langId => {
+                    const coords = getCoordsForLang(langId);
+                    if (!coords) return null;
+                    const word = getWordForLanguage(langId, wordData);
+                    const name = LANG_DISPLAY_NAMES[langId] || coords.name || langId;
+                    return { langId, word, name, lat: coords.lat, lon: coords.lon };
+                })
+                .filter(Boolean);
+            if (pathSteps.length > 1) {
+                const pathLine = pathSteps.map(s => [s.lon, s.lat]);
+                const geoLine = { type: 'LineString', coordinates: pathLine };
+                const pathD = path(geoLine);
+                if (pathD) {
+                    const pathG = g.append('g').attr('class', 'etym-path');
+                    pathG.append('path')
+                        .attr('d', pathD)
+                        .attr('fill', 'none')
+                        .attr('stroke', '#FFD700')
+                        .attr('stroke-width', 2.5)
+                        .attr('stroke-opacity', 0.9)
+                        .attr('stroke-linecap', 'round')
+                        .attr('stroke-linejoin', 'round');
+                    pathSteps.forEach((step, i) => {
+                        const pt = projection([step.lon, step.lat]);
+                        if (!pt) return;
+                        const seg = pathG.append('g').attr('transform', `translate(${pt[0]},${pt[1]})`);
+                        seg.append('circle')
+                            .attr('r', step.langId === 'ine-pro' ? 6 : 4)
+                            .attr('fill', FAMILY_COLORS[LANG_FAMILIES[step.langId]] || '#94A3B8')
+                            .attr('stroke', '#fff')
+                            .attr('stroke-width', 1);
+                        const nameLabel = (step.name || step.langId).slice(0, 18);
+                        const wordLabel = step.word ? String(step.word).slice(0, 16) : null;
+                        const offsetY = pathSteps.length > 3 && i > 0 && i < pathSteps.length - 1 ? (i % 2 === 0 ? -22 : 14) : -14;
+                        seg.append('text')
+                            .attr('y', offsetY)
+                            .attr('text-anchor', 'middle')
+                            .attr('font-size', '8px')
+                            .attr('font-family', 'Inter, sans-serif')
+                            .attr('fill', 'rgba(255,255,255,0.9)')
+                            .attr('paint-order', 'stroke')
+                            .attr('stroke', '#0d1627')
+                            .attr('stroke-width', '2px')
+                            .text(nameLabel);
+                        if (wordLabel) {
+                            seg.append('text')
+                                .attr('y', offsetY + (offsetY < 0 ? 12 : -12))
+                                .attr('text-anchor', 'middle')
+                                .attr('font-size', '9px')
+                                .attr('font-family', 'Inter, sans-serif')
+                                .attr('font-style', 'italic')
+                                .attr('fill', FAMILY_COLORS[LANG_FAMILIES[step.langId]] || '#FFD700')
+                                .attr('paint-order', 'stroke')
+                                .attr('stroke', '#0d1627')
+                                .attr('stroke-width', '2px')
+                                .text(wordLabel);
+                        }
+                    });
+                }
+            }
+        }
+
+        // Country hover layer (transparent paths on top of migration, below nodes) so hover works
+        if (worldData) {
+            const countries = topojson.feature(worldData, worldData.objects.countries);
+            const countryHover = g.append('g').attr('class', 'countries-hover');
+            countryHover.selectAll('path')
+                .data(countries.features)
+                .enter().append('path')
+                .attr('d', path)
+                .attr('fill', 'rgba(0,0,0,0.01)')
+                .attr('stroke', 'none')
+                .style('cursor', 'pointer')
+                .on('click', function(event, d) {
+                    const lang = getLangForCountry(d);
+                    if (lang && onPathTargetChange) onPathTargetChange(lang);
+                })
+                .on('mouseenter', function(event, d) {
+                    const countryName = d.properties?.name ?? d.properties?.NAME ?? d.properties?.admin ?? 'Country';
+                    const lang = getLangForCountry(d);
+                    const word = lang ? getWordForLanguage(lang, wordData) : null;
+                    const allNodes = [...(wordData?.etymologyChain ?? []), ...(wordData?.staticEntry?.cognates ?? []), ...(wordData?.staticEntry?.chain ?? [])];
+                    const node = allNodes.find(n => n.lang === lang);
+                    const langName = node?.langName ?? (LANGUAGE_COORDINATES[lang]?.name) ?? lang;
+                    const family = node?.family ?? (lang ? 'other' : null);
+                    const color = family ? (FAMILY_COLORS[family] ?? '#94A3B8') : '#94A3B8';
+                    d3.select(this).attr('fill', 'rgba(74, 158, 255, 0.2)');
+                    setTooltip({
+                        x: event.clientX, y: event.clientY,
+                        name: countryName,
+                        word: word ?? null,
+                        color,
+                        period: '',
+                        label: langName ? `Language: ${langName}` : (word ? 'Cognate' : ''),
+                        languages: null,
+                        noWordSearched: !wordData,
+                    });
+                })
+                .on('mouseleave', function() {
+                    d3.select(this).attr('fill', 'rgba(0,0,0,0.01)');
+                    setTooltip(null);
+                });
+        }
+
+        // Collect all potential nodes to show (only when showing full dispersion)
+        const nodesToShow = [];
+        if (showDispersion) {
+            // Always show family centers
+            Object.entries(IE_LOCATIONS).forEach(([key, loc]) => {
+                const word = getWordForLanguage(key, wordData);
+                const pt = projection([loc.lon, loc.lat]);
+                if (pt) {
+                    nodesToShow.push({ key, x: pt[0], y: pt[1], ...loc, word, isFamilyCenter: true });
+                }
+            });
+
+            // Add specific language dots if they have words in wordData
+            if (wordData) {
+                const allWords = [];
+                if (wordData.etymologyChain) allWords.push(...wordData.etymologyChain);
+                if (wordData.staticEntry?.cognates) allWords.push(...wordData.staticEntry.cognates);
+                if (wordData.staticEntry?.chain) allWords.push(...wordData.staticEntry.chain);
+
+                allWords.forEach(n => {
+                    if (LANGUAGE_COORDINATES[n.lang] && !nodesToShow.some(nd => nd.key === n.lang)) {
+                        const loc = LANGUAGE_COORDINATES[n.lang];
+                        const pt = projection([loc.lon, loc.lat]);
+                        if (pt) {
+                            nodesToShow.push({
+                                key: n.lang,
+                                x: pt[0], y: pt[1],
+                                name: loc.name,
+                                family: n.family,
+                                word: n.word,
+                                isFamilyCenter: false
+                            });
+                        }
+                    }
+                });
+            }
+        }
+
+        // Render nodes (only when showDispersion)
         const nodeG = g.append('g').attr('class', 'nodes');
         nodesToShow.forEach(nd => {
             const isPIE = nd.key === 'pie';
@@ -408,7 +528,12 @@ export default function WorldMap({ wordData, activeFamily, onFamilyClick }) {
             }
         });
 
-    }, [worldData, dimensions, wordData, activeFamily, rotation, scale]);
+        // Attach drag and zoom to the SVG so rotation/zoom work when clicking anywhere (events bubble)
+        svg.style('cursor', 'grab')
+            .call(drag)
+            .call(zoom)
+            .call(zoom.transform, d3.zoomIdentity.scale(zoomLevel));
+    }, [worldData, dimensions, wordData, activeFamily, rotation, zoomLevel, pathTargetLang, showDispersion]);
 
     return (
         <div ref={containerRef} style={{ width: '100%', height: '100%', position: 'relative', overflow: 'hidden' }}>
@@ -432,6 +557,9 @@ export default function WorldMap({ wordData, activeFamily, onFamilyClick }) {
                         <span className="tooltip-word">
                             Word: <em style={{ color: tooltip.color }}>{tooltip.word}</em>
                         </span>
+                    )}
+                    {tooltip.noWordSearched && (
+                        <span className="tooltip-hint">Search a word above to see the equivalent here</span>
                     )}
                     {tooltip.languages && (
                         <span className="tooltip-langs">{tooltip.languages.slice(0, 4).join(', ')}</span>
@@ -458,6 +586,7 @@ function getWordForLanguage(query, wordData) {
     if (wordData.etymologyChain) allWords.push(...wordData.etymologyChain);
     if (wordData.staticEntry?.cognates) allWords.push(...wordData.staticEntry.cognates);
     if (wordData.staticEntry?.chain) allWords.push(...wordData.staticEntry.chain);
+    if (wordData.apiCognates) allWords.push(...wordData.apiCognates);
 
     // Check for PIE root directly
     if (query === 'pie' || query === 'ine-pro') {

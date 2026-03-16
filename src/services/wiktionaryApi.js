@@ -198,6 +198,33 @@ export function parseEtymologyChain(wikitextEtymology, targetWord) {
 }
 
 /**
+ * Parse cognate templates from Wiktionary etymology section (e.g. {{cog|de|Nacht}}, {{cognate|la|nox}})
+ * to fill in equivalent words for more languages from the API.
+ */
+export function parseCognatesFromWikitext(wikitextEtymology) {
+  if (!wikitextEtymology) return [];
+  const cognates = [];
+  const seen = new Set();
+  const cogRegex = /\{\{(?:cog|cognate)\|([^|]+)\|([^|{}]*?)(?:\|[^{}]*)?\}\}/gi;
+  let match;
+  while ((match = cogRegex.exec(wikitextEtymology)) !== null) {
+    const lang = match[1].trim().toLowerCase();
+    const word = (match[2] || '').replace(/\[\[|\]\]/g, '').replace(/<!--.*?-->/g, '').trim();
+    if (!word || !LANG_FAMILIES[lang]) continue;
+    const key = `${lang}-${word}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    cognates.push({
+      lang,
+      langName: LANG_DISPLAY_NAMES[lang] || lang,
+      word,
+      family: LANG_FAMILIES[lang],
+    });
+  }
+  return cognates;
+}
+
+/**
  * Fetch etymology wikitext from Wiktionary API
  */
 export async function fetchWiktionaryEtymology(word) {
@@ -268,6 +295,7 @@ export async function analyzeWord(word) {
 
   const chain = wikitextValue ? parseEtymologyChain(wikitextValue, normalized) : null;
   const rawEtymText = wikitextValue ? cleanWikitext(wikitextValue) : null;
+  const apiCognates = wikitextValue ? parseCognatesFromWikitext(wikitextValue) : [];
 
   return {
     word: normalized,
@@ -275,6 +303,7 @@ export async function analyzeWord(word) {
     rawEtymologyText: rawEtymText,
     definition: definitionValue,
     hasPIERoot: chain ? chain.some(n => n.lang === 'ine-pro') : false,
+    apiCognates: apiCognates.length > 0 ? apiCognates : undefined,
   };
 }
 

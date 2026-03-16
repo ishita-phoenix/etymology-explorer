@@ -47,10 +47,10 @@ const IE_TREE_STRUCTURE = {
             ]
         },
         {
-            id: 'ita-pro', name: 'Proto-Italic', family: 'italic',
+            id: 'ita-pro', name: 'Proto-Italic (→ Romance)', family: 'italic',
             children: [
                 {
-                    id: 'la', name: 'Latin', family: 'italic',
+                    id: 'la', name: 'Latin (→ Romance languages)', family: 'italic',
                     children: [
                         { id: 'fr', name: 'French', family: 'italic', isLeaf: true },
                         { id: 'es', name: 'Spanish', family: 'italic', isLeaf: true },
@@ -133,6 +133,7 @@ const IE_TREE_STRUCTURE = {
 
 // Build a word-lookup map from the word data
 import { LANG_FAMILIES, LANG_DISPLAY_NAMES, APPROX_DATES } from '../services/wiktionaryApi';
+import { getPathFromPIEToLang } from '../utils/treePath';
 
 // Previous static IE_TREE_STRUCTURE definition omitted for brevity, but stays same...
 
@@ -143,7 +144,8 @@ function buildWordMap(wordData, wordKey) {
     if (staticEntry) {
         map['ine-pro'] = staticEntry.pieRoot;
         staticEntry.chain?.forEach(n => { if (n.word) map[n.lang] = n.word; });
-
+        // Include cognates so tree shows word in other languages (e.g. German Nacht, Latin nox)
+        staticEntry.cognates?.forEach(n => { if (n.lang && n.word) map[n.lang] = n.word; });
     }
 
     // Mix in chain from Wiktionary
@@ -151,40 +153,59 @@ function buildWordMap(wordData, wordKey) {
         if (n.lang && n.word) map[n.lang] = n.word;
     });
 
+    // Cognates from Wiktionary API ({{cog|lang|word}} in etymology section)
+    wordData?.apiCognates?.forEach(n => {
+        if (n.lang && n.word) map[n.lang] = n.word;
+    });
+
     return map;
 }
+
+// Family -> proto node id in the tree (so we can graft languages not in the static tree)
+const FAMILY_TO_PROTO_ID = {
+    pie: 'ine-pro',
+    germanic: 'gem-pro',
+    italic: 'ita-pro',
+    hellenic: 'grk-pro',
+    indoiranian: 'iir-pro',
+    celtic: 'cel-pro',
+    slavic: 'sla-pro',
+    baltic: 'balt-pro',
+    armenian: 'hy',
+    albanian: 'sq',
+};
 
 function buildDynamicTree(staticTree, wordMap) {
     // 1. Deep clone the static tree template
     const tree = JSON.parse(JSON.stringify(staticTree));
     const nodesById = {};
 
-    // 2. Index existing nodes and inject words
+    // 2. Index existing nodes and inject words from chain + cognates
     function index(node) {
         nodesById[node.id] = node;
-        node.word = wordMap[node.id] || null;
+        node.word = wordMap[node.id] ?? null;
         if (node.children) node.children.forEach(index);
     }
     index(tree);
 
-    // 3. Graft missing languages from wordMap that have family mapping
+    // 3. Graft missing languages from wordMap (parent = proto node for that family)
     Object.keys(wordMap).forEach(langCode => {
         if (!nodesById[langCode]) {
             const familyCode = LANG_FAMILIES[langCode];
             const familyName = LANG_DISPLAY_NAMES[langCode] || langCode;
+            const parentId = FAMILY_TO_PROTO_ID[familyCode];
+            const parent = parentId ? nodesById[parentId] : null;
 
-            // Try to find the closest ancestor (the family ID in our tree)
-            if (familyCode && nodesById[familyCode]) {
-                const parent = nodesById[familyCode];
+            if (parent) {
                 if (!parent.children) parent.children = [];
-
-                // Only add if not already present as a dynamic child
                 if (!parent.children.some(c => c.id === langCode)) {
                     parent.children.push({
                         id: langCode,
                         name: familyName,
                         word: wordMap[langCode],
-                        isDynamic: true
+                        family: familyCode,
+                        isDynamic: true,
+                        isLeaf: true
                     });
                 }
             }
@@ -194,7 +215,7 @@ function buildDynamicTree(staticTree, wordMap) {
     return tree;
 }
 
-export default function LanguageTree({ wordData, word, onNodeClick, activeFamily }) {
+export default function LanguageTree({ wordData, word, onNodeClick, activeFamily, pathTargetLang }) {
     const svgRef = useRef(null);
     const containerRef = useRef(null);
     const [dim, setDim] = useState({ w: 800, h: 600 });
@@ -258,18 +279,19 @@ export default function LanguageTree({ wordData, word, onNodeClick, activeFamily
         const g = svg.append('g')
             .attr('transform', `translate(${marginLeft},${marginTop})`);
 
-        // Links — curved horizontal
+        // Path to selected language (for highlighting nodes and links)
+        const pathToTarget = pathTargetLang ? getPathFromPIEToLang(pathTargetLang) : [];
+        const linkOnPath = (d) => pathToTarget.length > 0 && pathToTarget.includes(d.source.data.id) && pathToTarget.includes(d.target.data.id);
+
+        // Links — curved horizontal (highlight if on path to selected country/language)
         g.append('g').attr('class', 'links')
             .selectAll('path')
             .data(root.links())
             .enter().append('path')
             .attr('fill', 'none')
-            .attr('stroke', d => {
-                const col = FAMILY_COLORS[d.target.data.family] || '#94A3B8';
-                return col;
-            })
-            .attr('stroke-opacity', 0.45)
-            .attr('stroke-width', d => d.target.data.family === 'pie' ? 2.5 : 1.8)
+            .attr('stroke', d => linkOnPath(d) ? '#FFD700' : (FAMILY_COLORS[d.target.data.family] || '#94A3B8'))
+            .attr('stroke-opacity', d => linkOnPath(d) ? 0.95 : 0.45)
+            .attr('stroke-width', d => linkOnPath(d) ? 2.8 : (d.target.data.family === 'pie' ? 2.5 : 1.8))
             .attr('d', d3.linkHorizontal()
                 .x(d => d.y)
                 .y(d => d.x)
@@ -285,25 +307,26 @@ export default function LanguageTree({ wordData, word, onNodeClick, activeFamily
             .on('click', (_, d) => onNodeClick && onNodeClick(d.data));
 
         const nodeR = d => d.data.id === 'ine-pro' ? 12 : d.data.isLeaf ? 6 : 9;
+        const isOnPathToTarget = d => pathToTarget.length > 0 && pathToTarget.includes(d.data.id);
         const isActive = d => activeFamily && d.data.family === activeFamily;
 
-        // Node circles
+        // Node circles (highlight path when a country/language is selected)
         nodeG.append('circle')
             .attr('r', d => nodeR(d))
             .attr('fill', d => FAMILY_COLORS[d.data.family] || '#94A3B8')
             .attr('fill-opacity', d => d.data.id === 'ine-pro' ? 1 : d.data.word ? 0.9 : 0.45)
-            .attr('stroke', d => isActive(d) ? '#fff' : d.data.id === 'ine-pro' ? '#fff9a0' : 'rgba(255,255,255,0.2)')
-            .attr('stroke-width', d => isActive(d) ? 2.5 : d.data.id === 'ine-pro' ? 2 : 1)
-            .style('filter', d => (d.data.id === 'ine-pro' || d.data.word) ? 'url(#tree-glow)' : null);
+            .attr('stroke', d => isOnPathToTarget(d) ? '#FFD700' : isActive(d) ? '#fff' : d.data.id === 'ine-pro' ? '#fff9a0' : 'rgba(255,255,255,0.2)')
+            .attr('stroke-width', d => isOnPathToTarget(d) ? 2.5 : isActive(d) ? 2.5 : d.data.id === 'ine-pro' ? 2 : 1)
+            .style('filter', d => (d.data.id === 'ine-pro' || d.data.word || isOnPathToTarget(d)) ? 'url(#tree-glow)' : null);
 
-        // Language name label
+        // Language name label (single line for leaves with word: "Name — word" to avoid overlap)
         nodeG.append('text')
-            .attr('x', d => d.children ? -(nodeR(d) + 5) : (nodeR(d) + 5))
-            .attr('dy', d => d.data.word ? '-0.4em' : '0.35em')
+            .attr('x', d => d.children ? -(nodeR(d) + 6) : (nodeR(d) + 6))
+            .attr('dy', d => (d.data.word && d.data.isLeaf) ? '-0.6em' : (d.data.word ? '-0.4em' : '0.35em'))
             .attr('text-anchor', d => d.children ? 'end' : 'start')
-            .attr('font-size', d => d.data.id === 'ine-pro' ? '11px' : d.data.isLeaf ? '9.5px' : '10px')
+            .attr('font-size', d => d.data.id === 'ine-pro' ? '11px' : d.data.isLeaf ? '9px' : '10px')
             .attr('font-family', 'Inter, sans-serif')
-            .attr('font-weight', d => (d.data.id === 'ine-pro' || d.data.word) ? '600' : '400')
+            .attr('font-weight', d => (d.data.id === 'ine-pro' || d.data.word || isOnPathToTarget(d)) ? '600' : '400')
             .attr('fill', d => d.data.word
                 ? (FAMILY_COLORS[d.data.family] || '#CBD5E1')
                 : 'rgba(180,190,210,0.65)')
@@ -311,26 +334,26 @@ export default function LanguageTree({ wordData, word, onNodeClick, activeFamily
             .attr('stroke', '#0d1120')
             .attr('stroke-width', '3px')
             .attr('stroke-linejoin', 'round')
-            .text(d => d.data.name);
+            .text(d => (d.data.word && d.data.isLeaf) ? `${d.data.name} — "${d.data.word}"` : d.data.name);
 
-        // Word label (the word in that language)
-        nodeG.filter(d => !!d.data.word)
+        // Word label on second line only for non-leaf nodes with word (leaves already show "Name — word")
+        nodeG.filter(d => !!d.data.word && !!d.children)
             .append('text')
-            .attr('x', d => d.children ? -(nodeR(d) + 5) : (nodeR(d) + 5))
-            .attr('dy', '0.85em')
-            .attr('text-anchor', d => d.children ? 'end' : 'start')
-            .attr('font-size', '9px')
+            .attr('x', d => -(nodeR(d) + 6))
+            .attr('dy', '1.25em')
+            .attr('text-anchor', 'end')
+            .attr('font-size', '8.5px')
             .attr('font-family', 'Inter, sans-serif')
             .attr('font-style', 'italic')
             .attr('fill', d => FAMILY_COLORS[d.data.family] || '#94A3B8')
-            .attr('fill-opacity', 0.9)
+            .attr('fill-opacity', 0.95)
             .attr('paint-order', 'stroke')
-            .attr('stroke', '#0d1120')
-            .attr('stroke-width', '3px')
+            .attr('stroke', '#0d1627')
+            .attr('stroke-width', '2.5px')
             .attr('stroke-linejoin', 'round')
             .text(d => `"${d.data.word}"`);
 
-    }, [dim, wordData, word, activeFamily]);
+    }, [dim, wordData, word, activeFamily, pathTargetLang]);
 
     return (
         <div ref={containerRef} style={{ width: '100%', height: '100%', overflow: 'auto', position: 'relative' }}>

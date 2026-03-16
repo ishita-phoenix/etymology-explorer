@@ -17,12 +17,16 @@ export default function App() {
   const [activeFamily, setActiveFamily] = useState(null);
   const [showExtensions, setShowExtensions] = useState(false);
   const [showWordCard, setShowWordCard] = useState(false);
+  const [pathTargetLang, setPathTargetLang] = useState('en'); // PIE → this language on the map
+  const [showDispersion, setShowDispersion] = useState(true); // false = only path to selected language
 
   const handleSearch = useCallback(async (word) => {
     setIsLoading(true);
     setError(null);
     setSelectedNode(null);
     setActiveFamily(null);
+    setPathTargetLang('en');
+    setShowDispersion(true);
     setSearchedWord(word);
     setShowWordCard(false);
 
@@ -161,13 +165,30 @@ export default function App() {
           <section className="map-panel">
             <div className="panel-header">
               <span className="panel-title">🌍 Geographic Spread</span>
-              <span className="panel-hint">Click a family • Scroll to zoom</span>
+              <div className="panel-header-right">
+                <button
+                  type="button"
+                  className="dispersion-toggle"
+                  onClick={() => setShowDispersion((v) => !v)}
+                  title={showDispersion ? 'Show only path to selected language' : 'Show full dispersion'}
+                >
+                  {showDispersion ? '📍 Path only' : '🌐 Full dispersion'}
+                </button>
+                <span className="panel-hint">Click country = path • Drag = rotate</span>
+              </div>
             </div>
             <div className="panel-body">
               <WorldMap
                 wordData={etymologyData}
                 activeFamily={activeFamily}
                 onFamilyClick={handleFamilyClick}
+                pathTargetLang={pathTargetLang}
+                onPathTargetChange={(lang) => {
+                  setPathTargetLang(lang);
+                  setShowDispersion(false);
+                }}
+                showDispersion={showDispersion}
+                onToggleDispersion={() => setShowDispersion((v) => !v)}
               />
             </div>
           </section>
@@ -191,6 +212,7 @@ export default function App() {
                   setShowWordCard(true);
                 }}
                 activeFamily={activeFamily}
+                pathTargetLang={pathTargetLang}
               />
             </div>
           </section>

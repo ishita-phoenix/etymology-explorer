@@ -60,6 +60,42 @@
                 "family": "indoiranian"
             },
             {
+                "lang": "hi",
+                "langName": "Hindi",
+                "word": "रात (rāt)",
+                "family": "indoiranian"
+            },
+            {
+                "lang": "ur",
+                "langName": "Urdu",
+                "word": "رات (rāt)",
+                "family": "indoiranian"
+            },
+            {
+                "lang": "el",
+                "langName": "Modern Greek",
+                "word": "νύχτα (nýchta)",
+                "family": "hellenic"
+            },
+            {
+                "lang": "it",
+                "langName": "Italian",
+                "word": "notte",
+                "family": "italic"
+            },
+            {
+                "lang": "pt",
+                "langName": "Portuguese",
+                "word": "noite",
+                "family": "italic"
+            },
+            {
+                "lang": "pl",
+                "langName": "Polish",
+                "word": "noc",
+                "family": "slavic"
+            },
+            {
                 "lang": "de",
                 "langName": "German",
                 "word": "Nacht",
@@ -149,6 +185,18 @@
                 "lang": "sa",
                 "langName": "Sanskrit",
                 "word": "पितृ (pitṛ)",
+                "family": "indoiranian"
+            },
+            {
+                "lang": "hi",
+                "langName": "Hindi",
+                "word": "पिता (pitā)",
+                "family": "indoiranian"
+            },
+            {
+                "lang": "ur",
+                "langName": "Urdu",
+                "word": "والد (vālid) / باپ (bāp)",
                 "family": "indoiranian"
             },
             {
@@ -244,6 +292,24 @@
                 "family": "indoiranian"
             },
             {
+                "lang": "hi",
+                "langName": "Hindi",
+                "word": "उदक (udak)",
+                "family": "indoiranian"
+            },
+            {
+                "lang": "ur",
+                "langName": "Urdu",
+                "word": "پانی (pānī)",
+                "family": "indoiranian"
+            },
+            {
+                "lang": "el",
+                "langName": "Modern Greek",
+                "word": "νερό (neró)",
+                "family": "hellenic"
+            },
+            {
                 "lang": "de",
                 "langName": "German",
                 "word": "Wasser",
@@ -321,6 +387,18 @@
                 "lang": "sa",
                 "langName": "Sanskrit",
                 "word": "मातृ (mātṛ)",
+                "family": "indoiranian"
+            },
+            {
+                "lang": "hi",
+                "langName": "Hindi",
+                "word": "माता (mātā)",
+                "family": "indoiranian"
+            },
+            {
+                "lang": "ur",
+                "langName": "Urdu",
+                "word": "ماں (mā̃) / والدہ (vālida)",
                 "family": "indoiranian"
             },
             {
@@ -410,6 +488,12 @@
                 "family": "hellenic"
             },
             {
+                "lang": "el",
+                "langName": "Modern Greek",
+                "word": "φωτιά (fotiá)",
+                "family": "hellenic"
+            },
+            {
                 "lang": "de",
                 "langName": "German",
                 "word": "Feuer",
@@ -422,10 +506,10 @@
                 "family": "germanic"
             },
             {
-                "lang": "hu",
+                "lang": "hy",
                 "langName": "Armenian",
                 "word": "hur",
-                "family": "other"
+                "family": "armenian"
             }
         ]
     },
@@ -487,6 +571,18 @@
                 "lang": "sa",
                 "langName": "Sanskrit",
                 "word": "तारा (tārā)",
+                "family": "indoiranian"
+            },
+            {
+                "lang": "hi",
+                "langName": "Hindi",
+                "word": "तारा (tārā)",
+                "family": "indoiranian"
+            },
+            {
+                "lang": "ur",
+                "langName": "Urdu",
+                "word": "ستارہ (sitāra)",
                 "family": "indoiranian"
             },
             {
@@ -570,6 +666,18 @@
                 "family": "indoiranian"
             },
             {
+                "lang": "hi",
+                "langName": "Hindi",
+                "word": "हृदय (hṛdaya)",
+                "family": "indoiranian"
+            },
+            {
+                "lang": "ur",
+                "langName": "Urdu",
+                "word": "دل (dil)",
+                "family": "indoiranian"
+            },
+            {
                 "lang": "de",
                 "langName": "German",
                 "word": "Herz",
@@ -650,6 +758,18 @@
                 "family": "indoiranian"
             },
             {
+                "lang": "hi",
+                "langName": "Hindi",
+                "word": "नाम (nām)",
+                "family": "indoiranian"
+            },
+            {
+                "lang": "ur",
+                "langName": "Urdu",
+                "word": "نام (nām)",
+                "family": "indoiranian"
+            },
+            {
                 "lang": "de",
                 "langName": "German",
                 "word": "Name",
@@ -721,6 +841,18 @@
                 "lang": "sa",
                 "langName": "Sanskrit",
                 "word": "नव (nava)",
+                "family": "indoiranian"
+            },
+            {
+                "lang": "hi",
+                "langName": "Hindi",
+                "word": "नया (nayā)",
+                "family": "indoiranian"
+            },
+            {
+                "lang": "ur",
+                "langName": "Urdu",
+                "word": "نیا (nayā)",
                 "family": "indoiranian"
             },
             {
@@ -807,6 +939,18 @@
                 "lang": "sa",
                 "langName": "Sanskrit",
                 "word": "सूर्य (sūrya)",
+                "family": "indoiranian"
+            },
+            {
+                "lang": "hi",
+                "langName": "Hindi",
+                "word": "सूरज (sūraj)",
+                "family": "indoiranian"
+            },
+            {
+                "lang": "ur",
+                "langName": "Urdu",
+                "word": "سورج (sūraj)",
                 "family": "indoiranian"
             },
             {
@@ -954,6 +1098,18 @@
                 "lang": "sa",
                 "langName": "Sanskrit",
                 "word": "रोहित (rohita)",
+                "family": "indoiranian"
+            },
+            {
+                "lang": "hi",
+                "langName": "Hindi",
+                "word": "लाल (lāl)",
+                "family": "indoiranian"
+            },
+            {
+                "lang": "ur",
+                "langName": "Urdu",
+                "word": "لال (lāl)",
                 "family": "indoiranian"
             },
             {

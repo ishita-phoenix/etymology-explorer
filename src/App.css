@@ -504,6 +504,30 @@ body {
   letter-spacing: 0.02em;
 }
 
+.panel-header-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.dispersion-toggle {
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  color: var(--text-muted);
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  font-size: 0.68rem;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.dispersion-toggle:hover {
+  background: var(--gold-dim);
+  border-color: rgba(255, 215, 0, 0.25);
+  color: var(--gold);
+}
+
 .panel-hint {
   font-size: 0.63rem;
   color: var(--text-dim);
@@ -554,6 +578,13 @@ body {
   border-top: 1px solid var(--border);
   padding-top: 3px;
   margin-top: 1px;
+}
+
+.map-tooltip .tooltip-hint {
+  font-size: 0.65rem;
+  color: var(--text-dim);
+  font-style: italic;
+  margin-top: 4px;
 }
 
 .map-legend {
