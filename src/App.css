@@ -105,6 +105,23 @@ body {
   gap: 12px;
 }
 
+.header-logo-btn {
+  border: none;
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 999px;
+  padding: 4px 10px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.header-logo-btn:hover {
+  background: rgba(255, 215, 0, 0.12);
+  box-shadow: 0 0 18px rgba(255, 215, 0, 0.25);
+}
+
 .header-logo {
   font-size: 26px;
   color: var(--gold);
@@ -366,11 +383,42 @@ body {
   font-style: italic;
 }
 
+.hero-text-block {
+  max-width: 600px;
+  text-align: left;
+}
+
 .hero-caption {
-  text-align: center;
   color: var(--text-muted);
-  font-size: 0.78rem;
+  font-size: 0.8rem;
   line-height: 1.7;
+  margin-bottom: 14px;
+}
+
+.hero-features {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 10px;
+}
+
+.hero-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+}
+
+.hero-card h2 {
+  font-size: 0.8rem;
+  margin-bottom: 4px;
+  color: #e5e7eb;
+}
+
+.hero-card p {
+  font-size: 0.74rem;
+  color: var(--text-muted);
+  line-height: 1.5;
 }
 
 /* ─── ERROR / LOADING ────────────────────────────────────────── */

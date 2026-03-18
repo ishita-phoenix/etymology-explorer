@@ -144,8 +144,9 @@ function buildWordMap(wordData, wordKey) {
     if (staticEntry) {
         map['ine-pro'] = staticEntry.pieRoot;
         staticEntry.chain?.forEach(n => { if (n.word) map[n.lang] = n.word; });
-        // Include cognates so tree shows word in other languages (e.g. German Nacht, Latin nox)
-        staticEntry.cognates?.forEach(n => { if (n.lang && n.word) map[n.lang] = n.word; });
+        // Do NOT include static cognates from the JSON file here anymore.
+        // Modern equivalents should come from live APIs (apiCognates) instead,
+        // so we aren't storing lots of translations on disk.
     }
 
     // Mix in chain from Wiktionary

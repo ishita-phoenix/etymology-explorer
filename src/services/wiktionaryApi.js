@@ -1,5 +1,7 @@
 const WIKTIONARY_API = 'https://en.wiktionary.org/w/api.php';
 const FREE_DICT_API = 'https://api.dictionaryapi.dev/api/v2/entries/en';
+const ETYMOLOGIA_API = 'https://etymologia.org/api/v1'; // Free etymology API
+const MYMEMORY_API = 'https://api.mymemory.translated.net/get'; // Free translation API (rate-limited)
 
 // Language family codes from Wiktionary templates
 const LANG_FAMILIES = {
@@ -138,6 +140,18 @@ const APPROX_DATES = {
   'lt': 1600,
   'lv': 1600,
 };
+
+// Languages we try to get modern translations for (ISO codes aligned with LANG_FAMILIES/DISPLAY_NAMES)
+const TRANSLATION_TARGETS = [
+  'de', 'nl', 'sv', 'da', 'no',          // Germanic
+  'fr', 'es', 'it', 'pt', 'ro', 'la',    // Italic / Romance (+ Latin)
+  'el', 'grc',                           // Greek
+  'hi', 'ur', 'fa', 'sa',                // Indo-Iranian
+  'ru', 'pl', 'cs', 'bg',                // Slavic
+  'lt', 'lv',                            // Baltic
+  'ga', 'cy', 'gd', 'br',                // Celtic
+  'sq', 'hy',                            // Albanian, Armenian
+];
 
 /**
  * Parse Wiktionary wikitext etymology templates into structured chain
@@ -279,23 +293,103 @@ export async function fetchDefinition(word) {
 }
 
 /**
+ * Fetch etymology from Etymologia.org (free API)
+ */
+export async function fetchEtymologiaEtymology(word) {
+  try {
+    const res = await fetch(`${ETYMOLOGIA_API}?word=${encodeURIComponent(word)}`);
+    if (!res.ok) return null;
+    const data = await res.json();
+    if (!data?.etymology) return null;
+    return {
+      etymologyText: data.etymology,
+      source: 'etymologia'
+    };
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Fetch modern translations from MyMemory free API for a fixed set of target languages.
+ * This is best-effort and may be incomplete or rate-limited, but it avoids storing
+ * a huge translation table on disk.
+ */
+export async function fetchLiveTranslations(word) {
+  const source = 'en'; // Our search word is treated as English
+  const text = word.trim();
+  if (!text) return [];
+
+  const results = await Promise.allSettled(
+    TRANSLATION_TARGETS.map(async (target) => {
+      const params = new URLSearchParams({
+        q: text,
+        langpair: `${source}|${target}`,
+      });
+      const res = await fetch(`${MYMEMORY_API}?${params.toString()}`);
+      if (!res.ok) return null;
+      const data = await res.json();
+      const translated = data?.responseData?.translatedText;
+      if (!translated || translated.toLowerCase() === text.toLowerCase()) return null;
+      return {
+        lang: target,
+        langName: LANG_DISPLAY_NAMES[target] || target,
+        word: translated,
+        family: LANG_FAMILIES[target] || 'other',
+        source: 'mymemory',
+      };
+    })
+  );
+
+  return results
+    .filter(r => r.status === 'fulfilled' && r.value)
+    .map(r => r.value);
+}
+
+/**
  * Main function: fetch everything for a word and return structured data
  */
 export async function analyzeWord(word) {
   const normalized = word.toLowerCase().trim();
 
-  // Run both fetches in parallel
-  const [etymWikitext, definition] = await Promise.allSettled([
-    fetchWiktionaryEtymology(normalized),
-    fetchDefinition(normalized),
-  ]);
+  // Run all fetches in parallel
+  const [etymWikitext, definition, etymologiaResult, liveTranslationsResult] =
+    await Promise.allSettled([
+      fetchWiktionaryEtymology(normalized),
+      fetchDefinition(normalized),
+      fetchEtymologiaEtymology(normalized),
+      fetchLiveTranslations(normalized),
+    ]);
 
   const wikitextValue = etymWikitext.status === 'fulfilled' ? etymWikitext.value : null;
   const definitionValue = definition.status === 'fulfilled' ? definition.value : null;
+  const etymologiaValue = etymologiaResult.status === 'fulfilled' ? etymologiaResult.value : null;
+  const liveTranslations =
+    liveTranslationsResult.status === 'fulfilled' ? (liveTranslationsResult.value || []) : [];
 
-  const chain = wikitextValue ? parseEtymologyChain(wikitextValue, normalized) : null;
-  const rawEtymText = wikitextValue ? cleanWikitext(wikitextValue) : null;
-  const apiCognates = wikitextValue ? parseCognatesFromWikitext(wikitextValue) : [];
+  // Try Wiktionary first, then Etymologia as fallback
+  let chain = wikitextValue ? parseEtymologyChain(wikitextValue, normalized) : null;
+  let rawEtymText = null;
+  let apiCognates = [];
+
+  if (!chain && etymologiaValue?.etymologyText) {
+    rawEtymText = etymologiaValue.etymologyText;
+  } else if (wikitextValue) {
+    rawEtymText = cleanWikitext(wikitextValue);
+    apiCognates = parseCognatesFromWikitext(wikitextValue);
+  }
+
+  // Merge live translations with Wiktionary cognates, preferring explicit cognates for same lang
+  const cognatesByLang = new Map();
+  apiCognates.forEach(c => {
+    if (!cognatesByLang.has(c.lang)) cognatesByLang.set(c.lang, c);
+  });
+  liveTranslations.forEach(t => {
+    if (!cognatesByLang.has(t.lang)) {
+      cognatesByLang.set(t.lang, t);
+    }
+  });
+  const mergedCognates = Array.from(cognatesByLang.values());
 
   return {
     word: normalized,
@@ -303,7 +397,7 @@ export async function analyzeWord(word) {
     rawEtymologyText: rawEtymText,
     definition: definitionValue,
     hasPIERoot: chain ? chain.some(n => n.lang === 'ine-pro') : false,
-    apiCognates: apiCognates.length > 0 ? apiCognates : undefined,
+    apiCognates: mergedCognates.length > 0 ? mergedCognates : undefined,
   };
 }
 

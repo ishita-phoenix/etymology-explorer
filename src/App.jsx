@@ -62,6 +62,19 @@ export default function App() {
 
   const hasData = !!etymologyData;
 
+  const resetToHome = () => {
+    setSearchedWord(null);
+    setEtymologyData(null);
+    setError(null);
+    setSelectedNode(null);
+    setActiveFamily(null);
+    setShowWordCard(false);
+    setShowExtensions(false);
+    setPathTargetLang('en');
+    setShowDispersion(true);
+  };
+
+
   return (
     <div className="app">
       <div className="bg-orb bg-orb-1" />
@@ -71,7 +84,14 @@ export default function App() {
       {/* Header */}
       <header className="app-header">
         <div className="header-left">
-          <span className="header-logo">◎</span>
+          <button
+            type="button"
+            className="header-logo-btn"
+            onClick={resetToHome}
+            aria-label="Back to start"
+          >
+            <span className="header-logo">✺</span>
+          </button>
           <div>
             <h1 className="header-title">Etymology Explorer</h1>
             <p className="header-subtitle">Trace words to their Proto-Indo-European roots</p>
