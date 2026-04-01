@@ -1,11 +1,13 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import SearchBar from './components/SearchBar';
 import WorldMap from './components/WorldMap';
 import LanguageTree from './components/LanguageTree';
 import WordCard from './components/WordCard';
 import ExtensionsPanel from './components/ExtensionsPanel';
+import SoundLawPage from './components/SoundLawPage';
 import { analyzeWord } from './services/wiktionaryApi';
 import pieRoots from './data/pieRoots.json';
+import { getCanonicalEtymologyChain } from './utils/etymologyChain';
 import './App.css';
 
 export default function App() {
@@ -19,6 +21,52 @@ export default function App() {
   const [showWordCard, setShowWordCard] = useState(false);
   const [pathTargetLang, setPathTargetLang] = useState('en'); // PIE → this language on the map
   const [showDispersion, setShowDispersion] = useState(true); // false = only path to selected language
+  const [soundLawPage, setSoundLawPage] = useState(null); // { lawId, relatedIds }
+
+  const openSoundLawPage = useCallback((lawId, relatedIds = [], context = null) => {
+    setSoundLawPage({ lawId, relatedIds, context });
+  }, []);
+
+  const closeSoundLawPage = useCallback(() => {
+    setSoundLawPage(null);
+    if (window.location.hash.startsWith('#law=')) {
+      window.history.replaceState(null, '', `${window.location.pathname}${window.location.search}`);
+    }
+  }, []);
+
+  useEffect(() => {
+    const syncFromHash = () => {
+      const m = window.location.hash.match(/^#law=([^&]+)/);
+      if (m) {
+        setSoundLawPage((prev) => {
+          if (prev?.lawId === m[1]) return prev;
+          return { lawId: m[1], relatedIds: [] };
+        });
+      } else {
+        setSoundLawPage(null);
+      }
+    };
+    syncFromHash();
+    window.addEventListener('hashchange', syncFromHash);
+    return () => window.removeEventListener('hashchange', syncFromHash);
+  }, []);
+
+  useEffect(() => {
+    if (!soundLawPage?.lawId) return;
+    const next = `#law=${soundLawPage.lawId}`;
+    if (window.location.hash !== next) {
+      window.location.hash = next;
+    }
+  }, [soundLawPage]);
+
+  useEffect(() => {
+    if (!soundLawPage) return;
+    const onKey = (e) => {
+      if (e.key === 'Escape') closeSoundLawPage();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [soundLawPage, closeSoundLawPage]);
 
   const handleSearch = useCallback(async (word) => {
     setIsLoading(true);
@@ -33,20 +81,30 @@ export default function App() {
     try {
       const result = await analyzeWord(word);
       const staticEntry = pieRoots[word.toLowerCase()];
-
-      if (!result.etymologyChain || result.etymologyChain.length === 0) {
-        if (staticEntry) result.etymologyChain = staticEntry.chain;
-      }
-
       result.staticEntry = staticEntry || null;
+      result.etymologyChain = getCanonicalEtymologyChain(result);
 
-      if (!result.etymologyChain && !result.definition && !staticEntry) {
+      const { enrichmentPromise, ...dataForState } = result;
+
+      if (!dataForState.etymologyChain?.length && !dataForState.definition && !staticEntry) {
         setError(`No etymology data found for "${word}". Try: night · father · water · star · heart`);
         setEtymologyData(null);
       } else {
-        setEtymologyData(result);
+        setEtymologyData(dataForState);
         setError(null);
         setShowWordCard(true);
+      }
+
+      if (enrichmentPromise) {
+        enrichmentPromise
+          .then((mergedCognates) => {
+            if (!mergedCognates?.length) return;
+            setEtymologyData((prev) => {
+              if (!prev || prev.word !== result.word) return prev;
+              return { ...prev, apiCognates: mergedCognates };
+            });
+          })
+          .catch(() => {});
       }
     } catch {
       setError('Failed to fetch data. Check connection and try again.');
@@ -72,6 +130,7 @@ export default function App() {
     setShowExtensions(false);
     setPathTargetLang('en');
     setShowDispersion(true);
+    closeSoundLawPage();
   };
 
 
@@ -220,7 +279,7 @@ export default function App() {
           <section className="tree-panel-new">
             <div className="panel-header">
               <span className="panel-title">🌳 Language Descent Tree</span>
-              <span className="panel-hint">Highlighted words = cognates • Scroll to explore</span>
+              <span className="panel-hint">Sound laws: path vs all branches • Hover for change • Click to read</span>
             </div>
             <div className="panel-body">
               <LanguageTree
@@ -233,6 +292,9 @@ export default function App() {
                 }}
                 activeFamily={activeFamily}
                 pathTargetLang={pathTargetLang}
+                onLawPageOpen={(lawId, relatedIds, ctx) =>
+                  openSoundLawPage(lawId, relatedIds, ctx ? { ...ctx, pathTargetLang } : null)
+                }
               />
             </div>
           </section>
@@ -240,6 +302,16 @@ export default function App() {
       )}
 
       {showExtensions && <ExtensionsPanel onClose={() => setShowExtensions(false)} />}
+
+      {soundLawPage?.lawId && (
+        <SoundLawPage
+          lawId={soundLawPage.lawId}
+          relatedIds={soundLawPage.relatedIds}
+          context={soundLawPage.context}
+          onClose={closeSoundLawPage}
+          onOpenLaw={(id) => openSoundLawPage(id, [], null)}
+        />
+      )}
     </div>
   );
 }

@@ -346,31 +346,40 @@ export async function fetchLiveTranslations(word) {
     .map(r => r.value);
 }
 
+function mergeCognateLists(apiCognates, liveTranslations) {
+  const cognatesByLang = new Map();
+  (apiCognates || []).forEach((c) => {
+    if (!cognatesByLang.has(c.lang)) cognatesByLang.set(c.lang, c);
+  });
+  (liveTranslations || []).forEach((t) => {
+    if (!cognatesByLang.has(t.lang)) cognatesByLang.set(t.lang, t);
+  });
+  return Array.from(cognatesByLang.values());
+}
+
 /**
- * Main function: fetch everything for a word and return structured data
+ * Main function: fetch etymology data. Returns after Wiktionary + definition (fast path).
+ * Live translations (~35 MyMemory calls) merge in the background via enrichmentPromise.
  */
 export async function analyzeWord(word) {
   const normalized = word.toLowerCase().trim();
 
-  // Run all fetches in parallel
-  const [etymWikitext, definition, etymologiaResult, liveTranslationsResult] =
-    await Promise.allSettled([
-      fetchWiktionaryEtymology(normalized),
-      fetchDefinition(normalized),
-      fetchEtymologiaEtymology(normalized),
-      fetchLiveTranslations(normalized),
-    ]);
+  const [etymWikitext, definition] = await Promise.allSettled([
+    fetchWiktionaryEtymology(normalized),
+    fetchDefinition(normalized),
+  ]);
 
   const wikitextValue = etymWikitext.status === 'fulfilled' ? etymWikitext.value : null;
   const definitionValue = definition.status === 'fulfilled' ? definition.value : null;
-  const etymologiaValue = etymologiaResult.status === 'fulfilled' ? etymologiaResult.value : null;
-  const liveTranslations =
-    liveTranslationsResult.status === 'fulfilled' ? (liveTranslationsResult.value || []) : [];
 
-  // Try Wiktionary first, then Etymologia as fallback
   let chain = wikitextValue ? parseEtymologyChain(wikitextValue, normalized) : null;
   let rawEtymText = null;
   let apiCognates = [];
+
+  let etymologiaValue = null;
+  if (!chain) {
+    etymologiaValue = await fetchEtymologiaEtymology(normalized);
+  }
 
   if (!chain && etymologiaValue?.etymologyText) {
     rawEtymText = etymologiaValue.etymologyText;
@@ -379,25 +388,20 @@ export async function analyzeWord(word) {
     apiCognates = parseCognatesFromWikitext(wikitextValue);
   }
 
-  // Merge live translations with Wiktionary cognates, preferring explicit cognates for same lang
-  const cognatesByLang = new Map();
-  apiCognates.forEach(c => {
-    if (!cognatesByLang.has(c.lang)) cognatesByLang.set(c.lang, c);
-  });
-  liveTranslations.forEach(t => {
-    if (!cognatesByLang.has(t.lang)) {
-      cognatesByLang.set(t.lang, t);
-    }
-  });
-  const mergedCognates = Array.from(cognatesByLang.values());
+  const initialCognates = mergeCognateLists(apiCognates, []);
+
+  const enrichmentPromise = fetchLiveTranslations(normalized)
+    .then((liveTranslations) => mergeCognateLists(apiCognates, liveTranslations))
+    .catch(() => initialCognates);
 
   return {
     word: normalized,
     etymologyChain: chain,
     rawEtymologyText: rawEtymText,
     definition: definitionValue,
-    hasPIERoot: chain ? chain.some(n => n.lang === 'ine-pro') : false,
-    apiCognates: mergedCognates.length > 0 ? mergedCognates : undefined,
+    hasPIERoot: chain ? chain.some((n) => n.lang === 'ine-pro') : false,
+    apiCognates: initialCognates.length > 0 ? initialCognates : undefined,
+    enrichmentPromise,
   };
 }
 

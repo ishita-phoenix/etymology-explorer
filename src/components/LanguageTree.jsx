@@ -1,6 +1,11 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 import * as d3 from 'd3';
 import pieRoots from '../data/pieRoots.json';
+import { LANG_FAMILIES, LANG_DISPLAY_NAMES } from '../services/wiktionaryApi';
+import { getPathFromPIEToLang } from '../utils/treePath';
+import { getLawIdsForEdge, getLawById, getChainEdgeWordsMap, getTooltipLine } from '../data/soundLaws';
+import { getCanonicalEtymologyChain } from '../utils/etymologyChain';
+import SoundDiffPair from './SoundDiffPair';
 
 const FAMILY_COLORS = {
     pie: '#FFD700',
@@ -131,12 +136,6 @@ const IE_TREE_STRUCTURE = {
     ]
 };
 
-// Build a word-lookup map from the word data
-import { LANG_FAMILIES, LANG_DISPLAY_NAMES, APPROX_DATES } from '../services/wiktionaryApi';
-import { getPathFromPIEToLang } from '../utils/treePath';
-
-// Previous static IE_TREE_STRUCTURE definition omitted for brevity, but stays same...
-
 function buildWordMap(wordData, wordKey) {
     const map = {};
     const staticEntry = wordData?.staticEntry || (wordKey ? pieRoots[wordKey] : null);
@@ -216,10 +215,35 @@ function buildDynamicTree(staticTree, wordMap) {
     return tree;
 }
 
-export default function LanguageTree({ wordData, word, onNodeClick, activeFamily, pathTargetLang }) {
+function isEdgeOnLangPath(sourceId, targetId, pathIds) {
+    if (!pathIds?.length) return false;
+    for (let i = 0; i < pathIds.length - 1; i++) {
+        if (pathIds[i] === sourceId && pathIds[i + 1] === targetId) return true;
+    }
+    return false;
+}
+
+export default function LanguageTree({
+    wordData,
+    word,
+    onNodeClick,
+    activeFamily,
+    pathTargetLang,
+    onLawPageOpen,
+}) {
     const svgRef = useRef(null);
     const containerRef = useRef(null);
     const [dim, setDim] = useState({ w: 800, h: 600 });
+    const [lawTooltip, setLawTooltip] = useState(null);
+    /** 'path' = only edges on PIE → selected language (default English); 'all' = every attested chain edge with laws */
+    const [soundLawScope, setSoundLawScope] = useState('path');
+    const onLawPageOpenRef = useRef(onLawPageOpen);
+
+    useEffect(() => {
+        onLawPageOpenRef.current = onLawPageOpen;
+    }, [onLawPageOpen]);
+
+    const closeLawTooltip = useCallback(() => setLawTooltip(null), []);
 
     useEffect(() => {
         const obs = new ResizeObserver(() => {
@@ -289,6 +313,7 @@ export default function LanguageTree({ wordData, word, onNodeClick, activeFamily
             .selectAll('path')
             .data(root.links())
             .enter().append('path')
+            .attr('class', 'tree-link-path')
             .attr('fill', 'none')
             .attr('stroke', d => linkOnPath(d) ? '#FFD700' : (FAMILY_COLORS[d.target.data.family] || '#94A3B8'))
             .attr('stroke-opacity', d => linkOnPath(d) ? 0.95 : 0.45)
@@ -297,6 +322,89 @@ export default function LanguageTree({ wordData, word, onNodeClick, activeFamily
                 .x(d => d.y)
                 .y(d => d.x)
             );
+
+        // Sound-law markers: attested chain steps that have laws; optionally restricted to path → selected language.
+        const chainEdgeWords = getChainEdgeWordsMap(wordData);
+        const pathIds = getPathFromPIEToLang(pathTargetLang || 'en');
+        const linkWithLaws = root.links().filter((l) => {
+            const from = l.source.data.id;
+            const to = l.target.data.id;
+            const edgeKey = `${from}=>${to}`;
+            if (!chainEdgeWords.has(edgeKey)) return false;
+            if (getLawIdsForEdge(from, to).length === 0) return false;
+            if (soundLawScope === 'path' && (!pathIds.length || !isEdgeOnLangPath(from, to, pathIds))) {
+                return false;
+            }
+            return true;
+        });
+        const lawG = g.append('g').attr('class', 'sound-law-markers');
+        const markerEnter = lawG.selectAll('g.sound-law-hit')
+            .data(linkWithLaws)
+            .enter().append('g')
+            .attr('class', 'sound-law-hit')
+            .attr('transform', (d) => {
+                const mx = (d.source.y + d.target.y) / 2;
+                const my = (d.source.x + d.target.x) / 2;
+                return `translate(${mx},${my})`;
+            })
+            .style('cursor', 'pointer');
+
+        markerEnter.append('circle')
+            .attr('r', 9)
+            .attr('fill', 'transparent');
+
+        markerEnter.append('circle')
+            .attr('r', 5)
+            .attr('class', 'sound-law-marker-dot')
+            .attr('fill', 'rgba(255, 215, 0, 0.35)')
+            .attr('stroke', 'rgba(255, 215, 0, 0.85)')
+            .attr('stroke-width', 1.2);
+
+        markerEnter.append('text')
+            .attr('text-anchor', 'middle')
+            .attr('dy', '0.35em')
+            .attr('font-size', '8px')
+            .attr('font-weight', '700')
+            .attr('fill', '#fff6cc')
+            .attr('pointer-events', 'none')
+            .text('◆');
+
+        const pathLabel = LANG_DISPLAY_NAMES[pathTargetLang || 'en'] || pathTargetLang || 'English';
+
+        markerEnter
+            .on('mouseenter', (event, d) => {
+                const ids = getLawIdsForEdge(d.source.data.id, d.target.data.id);
+                const words = chainEdgeWords.get(`${d.source.data.id}=>${d.target.data.id}`) || null;
+                setLawTooltip({
+                    clientX: event.clientX,
+                    clientY: event.clientY,
+                    sourceId: d.source.data.id,
+                    targetId: d.target.data.id,
+                    lawIds: ids,
+                    words,
+                    pathLabel,
+                });
+            })
+            .on('mousemove', (event) => {
+                setLawTooltip((prev) => (prev ? { ...prev, clientX: event.clientX, clientY: event.clientY } : null));
+            })
+            .on('mouseleave', () => setLawTooltip(null))
+            .on('click', (event, d) => {
+                event.stopPropagation();
+                const ids = getLawIdsForEdge(d.source.data.id, d.target.data.id);
+                const words = chainEdgeWords.get(`${d.source.data.id}=>${d.target.data.id}`) || null;
+                if (ids.length && onLawPageOpenRef.current) {
+                    const [first, ...rest] = ids;
+                    onLawPageOpenRef.current(first, rest, {
+                        parentWord: words?.parentWord,
+                        childWord: words?.childWord,
+                        sourceId: d.source.data.id,
+                        targetId: d.target.data.id,
+                        pathLabel,
+                        pathTargetLang: pathTargetLang || 'en',
+                    });
+                }
+            });
 
         // Nodes
         const nodeG = g.append('g').attr('class', 'nodes')
@@ -354,7 +462,22 @@ export default function LanguageTree({ wordData, word, onNodeClick, activeFamily
             .attr('stroke-linejoin', 'round')
             .text(d => `"${d.data.word}"`);
 
-    }, [dim, wordData, word, activeFamily, pathTargetLang]);
+    }, [dim, wordData, word, activeFamily, pathTargetLang, onNodeClick, soundLawScope]);
+
+    useEffect(() => {
+        if (!lawTooltip) return;
+        const onKey = (e) => {
+            if (e.key === 'Escape') setLawTooltip(null);
+        };
+        window.addEventListener('keydown', onKey);
+        return () => window.removeEventListener('keydown', onKey);
+    }, [lawTooltip]);
+
+    const primaryLaw = lawTooltip?.lawIds?.length
+        ? getLawById(lawTooltip.lawIds[0])
+        : null;
+    const secondaryLawIds = lawTooltip?.lawIds?.slice(1, 3) ?? [];
+    const moreLawCount = (lawTooltip?.lawIds?.length ?? 0) > 3 ? (lawTooltip.lawIds.length - 3) : 0;
 
     return (
         <div ref={containerRef} style={{ width: '100%', height: '100%', overflow: 'auto', position: 'relative' }}>
@@ -364,8 +487,115 @@ export default function LanguageTree({ wordData, word, onNodeClick, activeFamily
                 style={{ display: 'block', minHeight: '100%' }}
             />
 
+            {lawTooltip && primaryLaw && (
+                <div
+                    className="sound-law-floating-tip sound-law-floating-tip--compact"
+                    style={{
+                        left: Math.min(
+                            Math.max(12, lawTooltip.clientX + 14),
+                            (typeof window !== 'undefined' ? window.innerWidth - 292 : 12)
+                        ),
+                        top: Math.min(
+                            Math.max(12, lawTooltip.clientY + 12),
+                            (typeof window !== 'undefined' ? window.innerHeight - 120 : 12)
+                        ),
+                    }}
+                    role="tooltip"
+                >
+                    <button type="button" className="sound-law-tip-close" onClick={closeLawTooltip} aria-label="Close">
+                        ×
+                    </button>
+                    <div className="sound-law-tip-kicker">
+                        Along your path to {lawTooltip.pathLabel || 'English'}
+                    </div>
+                    <strong className="sound-law-tip-title">{primaryLaw.shortName}</strong>
+                    <p className="sound-law-tip-one">{getTooltipLine(primaryLaw)}</p>
+                    {lawTooltip.words?.parentWord && lawTooltip.words?.childWord && (
+                        <div className="sound-law-tip-diff">
+                            <span className="sound-law-tip-diff-label">Change in this word</span>
+                            <SoundDiffPair left={lawTooltip.words.parentWord} right={lawTooltip.words.childWord} />
+                        </div>
+                    )}
+                    {secondaryLawIds.length > 0 && (
+                        <p className="sound-law-tip-also">
+                            Also involved:{' '}
+                            {secondaryLawIds.map((id) => {
+                                const l = getLawById(id);
+                                if (!l) return null;
+                                return (
+                                    <button
+                                        key={id}
+                                        type="button"
+                                        className="sound-law-tip-link"
+                                        onClick={() =>
+                                            onLawPageOpen?.(id, [], {
+                                                parentWord: lawTooltip.words?.parentWord,
+                                                childWord: lawTooltip.words?.childWord,
+                                                sourceId: lawTooltip.sourceId,
+                                                targetId: lawTooltip.targetId,
+                                                pathLabel: lawTooltip.pathLabel,
+                                                pathTargetLang: pathTargetLang || 'en',
+                                            })
+                                        }
+                                    >
+                                        {l.shortName}
+                                    </button>
+                                );
+                            })}
+                            {moreLawCount > 0 && (
+                                <span className="sound-law-tip-more"> +{moreLawCount} more</span>
+                            )}
+                        </p>
+                    )}
+                    <button
+                        type="button"
+                        className="sound-law-tip-cta"
+                        onClick={() => {
+                            const [first, ...rest] = lawTooltip.lawIds;
+                            if (first && onLawPageOpen) {
+                                onLawPageOpen(first, rest, {
+                                    parentWord: lawTooltip.words?.parentWord,
+                                    childWord: lawTooltip.words?.childWord,
+                                    sourceId: lawTooltip.sourceId,
+                                    targetId: lawTooltip.targetId,
+                                    pathLabel: lawTooltip.pathLabel,
+                                    pathTargetLang: pathTargetLang || 'en',
+                                });
+                            }
+                        }}
+                    >
+                        Read full article →
+                    </button>
+                </div>
+            )}
+
             {/* Legend */}
             <div className="tree-legend-panel">
+                <div className="tree-sound-scope" role="group" aria-label="Sound law scope">
+                    <span className="tree-sound-scope-label">Laws</span>
+                    <button
+                        type="button"
+                        className={`tree-sound-scope-btn${soundLawScope === 'path' ? ' is-active' : ''}`}
+                        onClick={() => setSoundLawScope('path')}
+                        title="Show only steps on the path from PIE to the language selected on the map (default English)"
+                    >
+                        Path
+                    </button>
+                    <button
+                        type="button"
+                        className={`tree-sound-scope-btn${soundLawScope === 'all' ? ' is-active' : ''}`}
+                        onClick={() => setSoundLawScope('all')}
+                        title="Show every attested step in the tree that has a law article"
+                    >
+                        All branches
+                    </button>
+                </div>
+                {wordData && getCanonicalEtymologyChain(wordData).length > 0 && (
+                    <p className="tree-sound-help">
+                        Glossary words use a full PIE → English chain so sound laws match the tree. Live-only
+                        lookups may skip proto steps—markers appear only where the chain lists both languages.
+                    </p>
+                )}
                 {Object.entries(FAMILY_COLORS)
                     .filter(([k]) => k !== 'other')
                     .map(([fam, col]) => (

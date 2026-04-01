@@ -675,9 +675,58 @@ body {
   backdrop-filter: blur(8px);
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  max-height: 220px;
+  gap: 6px;
+  max-height: 260px;
   overflow-y: auto;
+}
+
+.tree-sound-scope {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  padding-bottom: 6px;
+  margin-bottom: 2px;
+  border-bottom: 1px solid var(--border);
+}
+
+.tree-sound-scope-label {
+  font-size: 0.6rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-dim);
+  margin-right: 2px;
+}
+
+.tree-sound-scope-btn {
+  border: 1px solid var(--border2);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-muted);
+  font-family: inherit;
+  font-size: 0.62rem;
+  padding: 3px 8px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.tree-sound-scope-btn:hover {
+  color: var(--text);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.tree-sound-scope-btn.is-active {
+  background: rgba(255, 215, 0, 0.1);
+  border-color: rgba(255, 215, 0, 0.35);
+  color: var(--gold);
+}
+
+.tree-sound-help {
+  font-size: 0.58rem;
+  line-height: 1.35;
+  color: var(--text-dim);
+  margin: 0 0 4px;
+  padding: 0 1px;
 }
 
 .tree-legend-item {
@@ -1088,4 +1137,364 @@ body {
 .extensions-panel::-webkit-scrollbar-thumb {
   background: var(--border2);
   border-radius: 2px;
+}
+
+/* ─── SOUND LAWS (tree markers + overlay) ───────────────────── */
+.sound-law-floating-tip {
+  position: fixed;
+  z-index: 1200;
+  max-width: 280px;
+  padding: 12px 14px 12px;
+  background: rgba(10, 16, 30, 0.97);
+  border: 1px solid rgba(255, 215, 0, 0.35);
+  border-radius: var(--radius-sm);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.55);
+  font-size: 0.72rem;
+  line-height: 1.45;
+  pointer-events: auto;
+}
+
+.sound-law-floating-tip--compact {
+  max-width: 260px;
+  padding: 11px 32px 10px 12px;
+}
+
+.sound-law-tip-kicker {
+  font-size: 0.58rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-dim);
+  margin-bottom: 6px;
+}
+
+.sound-law-tip-title {
+  display: block;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+
+.sound-law-tip-one {
+  color: var(--text-muted);
+  font-size: 0.7rem;
+  line-height: 1.45;
+  margin: 0 0 8px;
+}
+
+.sound-law-tip-diff {
+  margin-bottom: 8px;
+  padding: 8px 8px;
+  background: rgba(0, 0, 0, 0.25);
+  border-radius: 6px;
+  border: 1px solid var(--border);
+}
+
+.sound-law-tip-diff-label {
+  display: block;
+  font-size: 0.58rem;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 5px;
+}
+
+.sound-law-tip-also {
+  font-size: 0.62rem;
+  color: var(--text-dim);
+  margin: 0 0 8px;
+  line-height: 1.4;
+}
+
+.sound-law-tip-more {
+  color: var(--text-dim);
+  font-style: italic;
+}
+
+.sound-law-tip-link {
+  border: none;
+  background: none;
+  padding: 0;
+  margin: 0 2px 0 0;
+  color: var(--blue);
+  font: inherit;
+  font-size: 0.62rem;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.sound-law-tip-link:hover {
+  color: var(--gold);
+}
+
+.sound-diff-pair {
+  font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+  font-size: 0.68rem;
+  color: var(--text);
+  line-height: 1.35;
+  word-break: break-word;
+}
+
+.sound-diff-arrow {
+  color: var(--text-dim);
+  font-weight: 400;
+}
+
+.sound-diff-mark {
+  background: rgba(255, 215, 0, 0.22);
+  color: var(--gold);
+  padding: 0 1px;
+  border-radius: 2px;
+  font-weight: 600;
+}
+
+.sound-law-tip-close {
+  position: absolute;
+  top: 6px;
+  right: 8px;
+  border: none;
+  background: transparent;
+  color: var(--text-dim);
+  cursor: pointer;
+  font-size: 1rem;
+  line-height: 1;
+  padding: 4px;
+}
+
+.sound-law-tip-close:hover {
+  color: var(--text);
+}
+
+.sound-law-tip-edge {
+  font-size: 0.62rem;
+  color: var(--text-dim);
+  font-family: ui-monospace, monospace;
+  margin-bottom: 8px;
+  padding-right: 20px;
+}
+
+.sound-law-tip-words {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+}
+
+.sound-law-tip-w {
+  font-style: italic;
+  color: var(--gold);
+}
+
+.sound-law-tip-arrow {
+  color: var(--text-dim);
+  font-size: 0.65rem;
+}
+
+.sound-law-tip-block {
+  margin-bottom: 10px;
+}
+
+.sound-law-tip-block strong {
+  display: block;
+  color: var(--text);
+  font-size: 0.78rem;
+  margin-bottom: 4px;
+}
+
+.sound-law-tip-block p {
+  color: var(--text-muted);
+  margin: 0;
+}
+
+.sound-law-tip-hint {
+  font-size: 0.65rem !important;
+  color: var(--text-dim) !important;
+  font-style: italic;
+  margin-top: 4px !important;
+}
+
+.sound-law-tip-cta {
+  width: 100%;
+  margin-top: 4px;
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(255, 215, 0, 0.35);
+  background: rgba(255, 215, 0, 0.08);
+  color: var(--gold);
+  font-family: inherit;
+  font-size: 0.7rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.sound-law-tip-cta:hover {
+  background: rgba(255, 215, 0, 0.15);
+}
+
+.sound-law-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  padding: 0;
+}
+
+.sound-law-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(4, 8, 16, 0.72);
+  backdrop-filter: blur(6px);
+}
+
+.sound-law-sheet {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 640px;
+  max-height: 100vh;
+  overflow: auto;
+  margin: 0 auto;
+  background: linear-gradient(165deg, rgba(12, 18, 32, 0.98), rgba(8, 12, 22, 0.99));
+  border-left: 1px solid var(--border);
+  border-right: 1px solid var(--border);
+  box-shadow: 0 0 80px rgba(0, 0, 0, 0.5);
+}
+
+.sound-law-context-banner {
+  margin-bottom: 14px;
+  padding: 12px 14px;
+  background: rgba(0, 0, 0, 0.28);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+
+.sound-law-context-label {
+  display: block;
+  font-size: 0.58rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-dim);
+  margin-bottom: 6px;
+}
+
+.sound-law-context-diff {
+  margin-bottom: 6px;
+}
+
+.sound-law-context-meta {
+  font-size: 0.62rem;
+  color: var(--text-dim);
+  font-family: ui-monospace, monospace;
+  margin: 0;
+}
+
+.sound-law-header {
+  padding: 20px 24px 16px;
+  border-bottom: 1px solid var(--border);
+  background: rgba(255, 215, 0, 0.04);
+}
+
+.sound-law-back {
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  font-family: inherit;
+  font-size: 0.75rem;
+  cursor: pointer;
+  padding: 0 0 12px;
+  display: block;
+}
+
+.sound-law-back:hover {
+  color: var(--gold);
+}
+
+.sound-law-era {
+  font-size: 0.65rem;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 6px;
+}
+
+.sound-law-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.45rem;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1.25;
+  margin-bottom: 10px;
+}
+
+.sound-law-lead {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  line-height: 1.55;
+}
+
+.sound-law-body {
+  padding: 20px 24px 28px;
+}
+
+.sound-law-section {
+  margin-bottom: 22px;
+}
+
+.sound-law-section h2 {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--gold);
+  margin-bottom: 8px;
+}
+
+.sound-law-prose {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  line-height: 1.65;
+  white-space: pre-wrap;
+}
+
+.sound-law-related {
+  padding: 16px 24px 28px;
+  border-top: 1px solid var(--border);
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.sound-law-related-label {
+  font-size: 0.65rem;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  display: block;
+  margin-bottom: 10px;
+}
+
+.sound-law-related-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.sound-law-chip {
+  border: 1px solid var(--border2);
+  background: var(--surface2);
+  color: var(--text-muted);
+  font-family: inherit;
+  font-size: 0.72rem;
+  padding: 6px 12px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.sound-law-chip:hover {
+  border-color: rgba(255, 215, 0, 0.35);
+  color: var(--gold);
 }
